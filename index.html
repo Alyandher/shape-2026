@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#080D14">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
   <title>Shape 2026</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,7 +58,24 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--blue);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
+
+    .sync-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--t3);
+      display: inline-block;
+      transition: background 0.3s;
+      flex-shrink: 0;
+    }
+    .sync-dot.syncing { background: var(--amber); animation: pulse-dot 1s ease-in-out infinite; }
+    .sync-dot.synced  { background: var(--green); }
+    .sync-dot.error   { background: #EF4444; }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
     .wk-info {
       font-size: 12px;
@@ -536,7 +556,7 @@
 
 <header id="hdr">
   <div class="hdr-top">
-    <span class="brand">Shape 2026</span>
+    <span class="brand">Shape 2026 <span id="syncDot" class="sync-dot"></span></span>
     <span class="wk-info" id="wkInfo"></span>
   </div>
   <div class="prog-row">
@@ -574,7 +594,36 @@
 <div id="hist"></div>
 
 <script>
-// ─── PLAN ────────────────────────────────────────────────────────────────────
+// ─── SUPABASE ─────────────────────────────────────────────────────────────────
+
+const SB_URL = 'https://rctdenydtdccgxkbpwki.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjdGRlbnlkdGRjY2d4a2Jwd2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4NDM0MzUsImV4cCI6MjA3NDQxOTQzNX0.pel_rmKgxOZFCUjaxyfxZXnYNDcCkoFZpYA03kYDbaE';
+const SB_USER = 'alyandher';
+const SB_HEADERS = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
+
+async function sbGet(key) {
+  try {
+    const r = await fetch(
+      `${SB_URL}/rest/v1/workout_data?user_id=eq.${SB_USER}&key=eq.${key}&select=data,updated_at`,
+      { headers: SB_HEADERS }
+    );
+    if (!r.ok) return null;
+    const rows = await r.json();
+    return rows[0] || null;
+  } catch { return null; }
+}
+
+async function sbSet(key, data) {
+  try {
+    await fetch(`${SB_URL}/rest/v1/workout_data`, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify({ user_id: SB_USER, key, data, updated_at: new Date().toISOString() })
+    });
+  } catch {}
+}
+
+// ─── PLAN ─────────────────────────────────────────────────────────────────────
 
 const SEMANAS = [
   {
@@ -799,20 +848,90 @@ function getSess() {
   return sessions[key];
 }
 
+// ─── SESSION PERSISTENCE ──────────────────────────────────────────────────────
+
+function saveLocalSessions() {
+  try { localStorage.setItem('shape2026_sessions', JSON.stringify(sessions)); } catch {}
+}
+
+function loadLocalSessions() {
+  try { return JSON.parse(localStorage.getItem('shape2026_sessions') || '{}'); } catch { return {}; }
+}
+
+let _syncTimer = null;
+function scheduleSyncSessions() {
+  saveLocalSessions();
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(async () => {
+    setSyncDot('syncing');
+    await sbSet('sessions', sessions);
+    setSyncDot('synced');
+  }, 1500);
+}
+
+// ─── SYNC HELPERS ─────────────────────────────────────────────────────────────
+
+function setSyncDot(state) {
+  const el = document.getElementById('syncDot');
+  if (el) el.className = `sync-dot ${state}`;
+}
+
+function mergeSessions(local, remote) {
+  const keys = new Set([...Object.keys(local || {}), ...Object.keys(remote || {})]);
+  const merged = {};
+  const countDone = sess => {
+    if (!sess || !sess.exData) return 0;
+    return Object.values(sess.exData).flatMap(e => e.series || []).filter(s => s.done).length;
+  };
+  keys.forEach(k => {
+    const l = local[k], r = remote[k];
+    if (!l) { merged[k] = r; return; }
+    if (!r) { merged[k] = l; return; }
+    merged[k] = countDone(r) >= countDone(l) ? r : l;
+  });
+  return merged;
+}
+
+function mergeHist(local, remote) {
+  const map = new Map();
+  [...(local || []), ...(remote || [])].forEach(h => {
+    const k = `${h.date}_${h.dia}_${h.semana}`;
+    const ex = map.get(k);
+    if (!ex || (h.doneSets || 0) >= (ex.doneSets || 0)) map.set(k, h);
+  });
+  const merged = [...map.values()];
+  const pd = s => { const [d,m,y] = (s||'').split('/'); return new Date(y,m-1,d); };
+  merged.sort((a, b) => pd(a.date) - pd(b.date));
+  if (merged.length > 60) merged.splice(0, merged.length - 60);
+  return merged;
+}
+
 // ─── HISTORY ──────────────────────────────────────────────────────────────────
 
 function loadHist() {
   try { return JSON.parse(localStorage.getItem('shape2026_hist') || '[]'); } catch { return []; }
 }
 
+function saveLocalHist(hist) {
+  localStorage.setItem('shape2026_hist', JSON.stringify(hist));
+}
+
 function saveToHist(entry) {
   const hist = loadHist();
   hist.push(entry);
   if (hist.length > 60) hist.splice(0, hist.length - 60);
-  localStorage.setItem('shape2026_hist', JSON.stringify(hist));
+  saveLocalHist(hist);
+  sbSet('hist', hist);
 }
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
+
+function renderAll() {
+  renderWkSwitcher();
+  renderTabs();
+  renderMain();
+  renderHist();
+}
 
 function renderWkSwitcher() {
   const el = document.getElementById('wkSwitcher');
@@ -921,10 +1040,7 @@ function renderMain() {
 
 function switchSemana(num) {
   semanaNum = num;
-  renderWkSwitcher();
-  renderTabs();
-  renderMain();
-  renderHist();
+  renderAll();
 }
 
 function selectDay(dia) {
@@ -938,6 +1054,7 @@ function upVal(exIdx, setIdx, field, val) {
   const sess = getSess();
   if (sess.exData[exIdx] && sess.exData[exIdx].series[setIdx]) {
     sess.exData[exIdx].series[setIdx][field] = val;
+    scheduleSyncSessions();
   }
 }
 
@@ -953,9 +1070,9 @@ function toggleSet(exIdx, setIdx) {
     startTimer();
   }
 
+  scheduleSyncSessions();
   renderMain();
 
-  // scroll to keep exercise visible
   const card = document.getElementById(`ex${exIdx}`);
   if (card) {
     const rect = card.getBoundingClientRect();
@@ -971,6 +1088,7 @@ function addSet(exIdx) {
   const existing = sess.exData[exIdx].series;
   const lastPeso = existing.length ? existing[existing.length-1].peso : '';
   existing.push({ peso: lastPeso, reps: ex.r === 'max' ? '' : ex.r, done: false });
+  scheduleSyncSessions();
   renderMain();
 }
 
@@ -1053,12 +1171,17 @@ function openModal() {
 
   exportText = lines.filter(l => l !== undefined).join('\n');
 
-  // save to history
   const histEntry = { date: new Date().toLocaleDateString('pt-BR'), dia: currentDay,
     diaNome: getDia(currentDay).nome, semana: sem.num, startTime: sess.startTime,
     endTime: sess.endTime, doneSets, totalSets, exData: {} };
   exs.forEach((ex, i) => { histEntry.exData[ex.nome] = sess.exData[i].series; });
   saveToHist(histEntry);
+
+  // clear in-progress session after finishing
+  const key = sessionKey(semanaNum, currentDay);
+  delete sessions[key];
+  saveLocalSessions();
+  sbSet('sessions', sessions);
 
   document.getElementById('exportBox').textContent = exportText;
   document.getElementById('mSub').textContent = `${today}${durStr ? ' · ' + durStr : ''}`;
@@ -1115,16 +1238,60 @@ function renderHist() {
   el.innerHTML = html + '</div>';
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
+// ─── PULL-TO-REFRESH PREVENTION ───────────────────────────────────────────────
 
-function init() {
-  renderWkSwitcher();
-  renderTabs();
-  renderMain();
-  renderHist();
+let _touchStartY = 0;
+document.addEventListener('touchstart', e => { _touchStartY = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchmove', e => {
+  if (window.scrollY === 0 && e.touches[0].clientY > _touchStartY + 10) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+// ─── INIT WITH SYNC ───────────────────────────────────────────────────────────
+
+async function initWithSync() {
+  // 1. Load local data and render immediately
+  sessions = loadLocalSessions();
+  renderAll();
+
+  // 2. Fetch Supabase in background
+  setSyncDot('syncing');
+  try {
+    const [remSessRow, remHistRow] = await Promise.all([
+      sbGet('sessions'),
+      sbGet('hist')
+    ]);
+
+    let changed = false;
+
+    if (remHistRow && Array.isArray(remHistRow.data) && remHistRow.data.length) {
+      const merged = mergeHist(loadHist(), remHistRow.data);
+      saveLocalHist(merged);
+      changed = true;
+    }
+
+    if (remSessRow && remSessRow.data && typeof remSessRow.data === 'object') {
+      sessions = mergeSessions(sessions, remSessRow.data);
+      saveLocalSessions();
+      changed = true;
+    }
+
+    if (changed) renderAll();
+    setSyncDot('synced');
+  } catch {
+    setSyncDot('error');
+    setTimeout(() => setSyncDot(''), 4000);
+  }
 }
 
-init();
+initWithSync();
+
+// ─── SERVICE WORKER ───────────────────────────────────────────────────────────
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
