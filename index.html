@@ -628,9 +628,9 @@ async function sbSet(key, data) {
 const SEMANAS = [
   {
     num: 1,
-    inicio: '2026-06-16',
-    fim: '2026-06-20',
-    periodo: '16/06 – 20/06',
+    inicio: '2026-06-15',
+    fim: '2026-06-19',
+    periodo: '15/06 – 19/06',
     protocolo: '60–70% da carga habitual · 3 séries · parar 2-3 reps antes da falha',
     dias: {
       seg: {
@@ -1183,18 +1183,44 @@ function openModal() {
   saveLocalSessions();
   sbSet('sessions', sessions);
 
+  _justFinished = true;
   document.getElementById('exportBox').textContent = exportText;
   document.getElementById('mSub').textContent = `${today}${durStr ? ' · ' + durStr : ''}`;
   document.getElementById('overlay').classList.add('open');
   renderHist();
 }
 
+const DAY_ORDER = ['seg', 'ter', 'qui', 'sex'];
+
+function nextTrainingDay() {
+  const idx = DAY_ORDER.indexOf(currentDay);
+  if (idx < DAY_ORDER.length - 1) {
+    return { sem: semanaNum, dia: DAY_ORDER[idx + 1] };
+  }
+  const nextSem = SEMANAS.find(s => s.num === semanaNum + 1);
+  if (nextSem) return { sem: nextSem.num, dia: DAY_ORDER[0] };
+  return { sem: semanaNum, dia: DAY_ORDER[0] };
+}
+
+let _justFinished = false;
+
 function closeModal() {
   document.getElementById('overlay').classList.remove('open');
+  if (_justFinished) {
+    _justFinished = false;
+    const next = nextTrainingDay();
+    semanaNum = next.sem;
+    currentDay = next.dia;
+    renderAll();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 function handleOvClick(e) {
-  if (e.target.id === 'overlay') closeModal();
+  if (e.target.id === 'overlay') {
+    _justFinished = false;
+    document.getElementById('overlay').classList.remove('open');
+  }
 }
 
 async function copyExport() {
