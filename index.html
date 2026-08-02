@@ -651,24 +651,24 @@ const SEMANAS = [
     dias: {
       seg: {
         nome: 'Peito Superior',
-        nota: 'Reativar o peitoral superior com controle total. Sem ego.',
+        nota: 'Fase enxuta — volume reduzido até a fase ruim passar. Reativar o peitoral com controle total, sem ego.',
         exercicios: [
-          { nome: 'Supino inclinado barra',  s:3, r:'8',   obs:'Principal — controle na descida',               hernia:true },
-          { nome: 'Supino inclinado halter', s:3, r:'10',  obs:'Sentir o peitoral, não o ombro' },
-          { nome: 'Crucifixo inclinado',     s:3, r:'12',  obs:'Cotovelo levemente flexionado' },
-          { nome: 'Crossover baixo→alto',    s:3, r:'15',  obs:'Polias embaixo, fecha como abraço' },
+          { nome: 'Supino inclinado barra',  s:2, r:'8',   obs:'Principal — controle na descida',               hernia:true },
+          { nome: 'Supino inclinado halter', s:2, r:'10',  obs:'Sentir o peitoral, não o ombro' },
+          { nome: 'Crucifixo inclinado',     s:2, r:'12',  obs:'Cotovelo levemente flexionado' },
+          { nome: 'Crossover baixo→alto',    s:2, r:'15',  obs:'Polias embaixo, fecha como abraço' },
           { nome: 'Paralelas',               s:2, r:'max', obs:'Para antes da falha — atenção à hérnia', hernia:true, corp:true }
         ]
       },
       ter: {
         nome: 'Costas (Largura)',
-        nota: 'Ativar o dorsal, abrir o V-shape. Escápula retraída em todo exercício.',
+        nota: 'Fase enxuta — volume reduzido até a fase ruim passar. Escápula retraída em todo exercício.',
         exercicios: [
-          { nome: 'Barra fixa aberta',   s:3, r:'6-8', obs:'Se necessário, usar elástico de apoio', corp:true },
-          { nome: 'Puxada aberta',       s:3, r:'10',  obs:'Puxar para o peito, não para o queixo' },
-          { nome: 'Remada cavalinho',    s:3, r:'8',   obs:'Cotovelo alto, comprimir dorsal' },
-          { nome: 'Pulldown braço reto', s:3, r:'12',  obs:'Braços estendidos, empurrar barra até o quadril' },
-          { nome: 'Remada unilateral',   s:3, r:'10',  obs:'Apoio no banco, torção controlada' }
+          { nome: 'Barra fixa aberta',   s:2, r:'6-8', obs:'Se necessário, usar elástico de apoio', corp:true },
+          { nome: 'Puxada aberta',       s:2, r:'10',  obs:'Puxar para o peito, não para o queixo' },
+          { nome: 'Remada cavalinho',    s:2, r:'8',   obs:'Cotovelo alto, comprimir dorsal' },
+          { nome: 'Pulldown braço reto', s:2, r:'12',  obs:'Braços estendidos, empurrar barra até o quadril' },
+          { nome: 'Remada unilateral',   s:2, r:'10',  obs:'Apoio no banco, torção controlada' }
         ]
       },
       qui: {
@@ -684,29 +684,29 @@ const SEMANAS = [
       },
       sex: {
         nome: 'Ombros + Braços',
-        nota: 'Ombros primeiro enquanto frescos. Braços no final.',
+        nota: 'Fase enxuta — volume reduzido até a fase ruim passar. Ombros primeiro enquanto frescos.',
         grupos: [
           {
             nome: 'Ombros',
             exercicios: [
-              { nome: 'Desenvolvimento halter',    s:3, r:'8',  obs:'Sentado ou em pé — sem arqueamento de lombar' },
-              { nome: 'Elevação lateral',          s:4, r:'15', obs:'Cotovelo levemente flexionado, controle total' },
-              { nome: 'Elevação lateral parcial',  s:3, r:'25', obs:'Amplitude parcial inferior — queima deltoide medial' },
-              { nome: 'Crucifixo invertido',       s:3, r:'15', obs:'Debruçado ou na polia — ativa posterior do ombro' }
+              { nome: 'Desenvolvimento halter',    s:2, r:'8',  obs:'Sentado ou em pé — sem arqueamento de lombar' },
+              { nome: 'Elevação lateral',          s:3, r:'15', obs:'Cotovelo levemente flexionado, controle total' },
+              { nome: 'Elevação lateral parcial',  s:2, r:'25', obs:'Amplitude parcial inferior — queima deltoide medial' },
+              { nome: 'Crucifixo invertido',       s:2, r:'15', obs:'Debruçado ou na polia — ativa posterior do ombro' }
             ]
           },
           {
             nome: 'Bíceps',
             exercicios: [
-              { nome: 'Rosca direta',    s:3, r:'10', obs:'Cotovelos fixos ao corpo' },
-              { nome: 'Rosca alternada', s:3, r:'12', obs:'Supinação no topo' }
+              { nome: 'Rosca direta',    s:2, r:'10', obs:'Cotovelos fixos ao corpo' },
+              { nome: 'Rosca alternada', s:2, r:'12', obs:'Supinação no topo' }
             ]
           },
           {
             nome: 'Tríceps',
             exercicios: [
-              { nome: 'Tríceps corda', s:3, r:'12', obs:'Abrir as pontas no final' },
-              { nome: 'Tríceps testa', s:3, r:'10', obs:'Barra EZ, cotovelos apontados para cima' }
+              { nome: 'Tríceps corda', s:2, r:'12', obs:'Abrir as pontas no final' },
+              { nome: 'Tríceps testa', s:2, r:'10', obs:'Barra EZ, cotovelos apontados para cima' }
             ]
           }
         ]
@@ -722,24 +722,24 @@ const SEMANAS = [
     dias: {
       seg: {
         nome: 'Peito Superior',
-        nota: 'Volume maior. Carga baseada nos pesos da semana 1.',
+        nota: 'Fase enxuta — volume reduzido até a fase ruim passar. Sem meta de carga fixa: usa o peso que o corpo aguentar hoje.',
         exercicios: [
-          { nome: 'Supino inclinado barra',  s:4, r:'8',   obs:'kg total (barra + anilhas) · Sem 1: 40kg (20+10+10) · meta: 50kg (20+15+15)', hernia:true },
-          { nome: 'Supino inclinado halter', s:4, r:'10',  obs:'kg por halter · meta: 18kg · sentir o peitoral, não o ombro' },
-          { nome: 'Crucifixo inclinado',     s:4, r:'12',  obs:'kg por halter · meta: 6–7kg · cotovelo levemente flexionado' },
-          { nome: 'Crossover baixo→alto',    s:3, r:'15',  obs:'kg por polia · meta: 7kg · fecha como abraço' },
-          { nome: 'Paralelas',               s:3, r:'max', obs:'Próximo da falha — atenção à hérnia', hernia:true, corp:true }
+          { nome: 'Supino inclinado barra',  s:3, r:'8',   obs:'kg total (barra + anilhas) · controle na descida, sem forçar carga', hernia:true },
+          { nome: 'Supino inclinado halter', s:3, r:'10',  obs:'kg por halter · sentir o peitoral, não o ombro' },
+          { nome: 'Crucifixo inclinado',     s:3, r:'12',  obs:'kg por halter · cotovelo levemente flexionado' },
+          { nome: 'Crossover baixo→alto',    s:2, r:'15',  obs:'kg por polia · fecha como abraço' },
+          { nome: 'Paralelas',               s:2, r:'max', obs:'Para antes da falha — atenção à hérnia', hernia:true, corp:true }
         ]
       },
       ter: {
         nome: 'Costas (Largura)',
-        nota: 'Volume normal. Escápula retraída em todo exercício.',
+        nota: 'Fase enxuta — volume reduzido até a fase ruim passar. Escápula retraída em todo exercício.',
         exercicios: [
-          { nome: 'Barra fixa aberta',   s:4, r:'8-10',  obs:'Se necessário, usar elástico', corp:true },
-          { nome: 'Puxada aberta',       s:4, r:'10-12', obs:'Puxar para o peito, não para o queixo' },
-          { nome: 'Remada cavalinho',    s:4, r:'8',     obs:'Cotovelo alto, comprimir dorsal' },
-          { nome: 'Pulldown braço reto', s:3, r:'12-15', obs:'Braços estendidos, empurrar barra até o quadril' },
-          { nome: 'Remada unilateral',   s:3, r:'10',    obs:'Apoio no banco, torção controlada' }
+          { nome: 'Barra fixa aberta',   s:3, r:'8-10',  obs:'Se necessário, usar elástico', corp:true },
+          { nome: 'Puxada aberta',       s:3, r:'10-12', obs:'Puxar para o peito, não para o queixo' },
+          { nome: 'Remada cavalinho',    s:3, r:'8',     obs:'Cotovelo alto, comprimir dorsal' },
+          { nome: 'Pulldown braço reto', s:2, r:'12-15', obs:'Braços estendidos, empurrar barra até o quadril' },
+          { nome: 'Remada unilateral',   s:2, r:'10',    obs:'Apoio no banco, torção controlada' }
         ]
       },
       qui: {
@@ -755,29 +755,29 @@ const SEMANAS = [
       },
       sex: {
         nome: 'Ombros + Braços',
-        nota: 'Volume maior. Ombros primeiro enquanto frescos.',
+        nota: 'Fase enxuta — volume reduzido até a fase ruim passar. Ombros primeiro enquanto frescos.',
         grupos: [
           {
             nome: 'Ombros',
             exercicios: [
-              { nome: 'Desenvolvimento halter',   s:4, r:'6-8', obs:'Sentado ou em pé — sem arqueamento' },
-              { nome: 'Elevação lateral',         s:5, r:'15',  obs:'Cotovelo levemente flexionado, controle total' },
-              { nome: 'Elevação lateral parcial', s:3, r:'25',  obs:'Amplitude parcial inferior' },
-              { nome: 'Crucifixo invertido',      s:4, r:'15',  obs:'Debruçado ou na polia' }
+              { nome: 'Desenvolvimento halter',   s:3, r:'6-8', obs:'Sentado ou em pé — sem arqueamento' },
+              { nome: 'Elevação lateral',         s:3, r:'15',  obs:'Cotovelo levemente flexionado, controle total' },
+              { nome: 'Elevação lateral parcial', s:2, r:'25',  obs:'Amplitude parcial inferior' },
+              { nome: 'Crucifixo invertido',      s:3, r:'15',  obs:'Debruçado ou na polia' }
             ]
           },
           {
             nome: 'Bíceps',
             exercicios: [
-              { nome: 'Rosca direta',    s:4, r:'8-10',  obs:'Cotovelos fixos ao corpo' },
-              { nome: 'Rosca alternada', s:3, r:'10-12', obs:'Supinação no topo' }
+              { nome: 'Rosca direta',    s:3, r:'8-10',  obs:'Cotovelos fixos ao corpo' },
+              { nome: 'Rosca alternada', s:2, r:'10-12', obs:'Supinação no topo' }
             ]
           },
           {
             nome: 'Tríceps',
             exercicios: [
-              { nome: 'Tríceps corda', s:4, r:'12',  obs:'Abrir as pontas no final' },
-              { nome: 'Tríceps testa', s:3, r:'8-10', obs:'Barra EZ, cotovelos apontados para cima' }
+              { nome: 'Tríceps corda', s:3, r:'12',  obs:'Abrir as pontas no final' },
+              { nome: 'Tríceps testa', s:2, r:'8-10', obs:'Barra EZ, cotovelos apontados para cima' }
             ]
           }
         ]
