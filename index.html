@@ -251,10 +251,26 @@
 
     .sets-hdr, .set-row {
       display: grid;
-      grid-template-columns: 26px 1fr 1fr 44px;
+      grid-template-columns: 26px 1fr 1fr 44px 26px;
       gap: 6px;
       align-items: center;
     }
+
+    .set-del-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--t3);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .set-del-btn:active { color: var(--red, #ef4444); }
 
     .sets-hdr {
       margin-bottom: 6px;
@@ -964,7 +980,7 @@ function renderProgress() {
   const pct = exs.length ? (done / exs.length * 100) : 0;
   document.getElementById('progFill').style.width = pct + '%';
   document.getElementById('progTxt').textContent = `${done}/${exs.length} exercícios`;
-  document.getElementById('wkInfo').textContent = `Sem. ${semanaNum} · ${getSemana().periodo}`;
+  document.getElementById('wkInfo').textContent = `Hoje · ${new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}`;
 }
 
 function renderMain() {
@@ -1007,6 +1023,7 @@ function renderMain() {
           <button class="set-btn${s.done ? ' ok' : ''}" onclick="toggleSet(${i},${si})">
             ${s.done ? '✓' : '○'}
           </button>
+          ${d.series.length > 1 ? `<button class="set-del-btn" onclick="removeSet(${i},${si})" title="Excluir série">✕</button>` : ''}
         </div>`;
     });
 
@@ -1092,6 +1109,15 @@ function addSet(exIdx) {
   renderMain();
 }
 
+function removeSet(exIdx, setIdx) {
+  const sess = getSess();
+  const series = sess.exData[exIdx].series;
+  if (series.length <= 1) return;
+  series.splice(setIdx, 1);
+  scheduleSyncSessions();
+  renderMain();
+}
+
 // ─── TIMER ────────────────────────────────────────────────────────────────────
 
 let timerInterval = null;
@@ -1125,6 +1151,7 @@ function skipTimer() {
 // ─── MODAL / EXPORT ───────────────────────────────────────────────────────────
 
 function openModal() {
+  if (!confirm('Finalizar este treino agora? Se precisar, dá pra reabrir depois tocando nele no Histórico.')) return;
   const sess = getSess();
   sess.endTime = new Date().toISOString();
   const exs = getExs(currentDay);
@@ -1251,9 +1278,9 @@ function renderHist() {
     return;
   }
 
-  let html = `<div style="padding:0 16px 16px"><div class="hist-title">Histórico de Treinos</div>`;
+  let html = `<div style="padding:0 16px 16px"><div class="hist-title">Histórico de Treinos <small style="font-weight:400;color:var(--t3)">(toque pra reabrir e editar)</small></div>`;
   hist.forEach(h => {
-    html += `<div class="hist-item">
+    html += `<div class="hist-item" style="cursor:pointer" onclick="editHistEntry('${h.date}','${h.dia}',${h.semana})">
       <div>
         <div class="hi-date">${h.date}</div>
         <div class="hi-day">Sem. ${h.semana || '?'} · ${h.diaNome || h.dia}</div>
@@ -1262,6 +1289,32 @@ function renderHist() {
     </div>`;
   });
   el.innerHTML = html + '</div>';
+}
+
+function editHistEntry(date, dia, semana) {
+  if (!confirm(`Reabrir o treino de ${date} (${dia}) para editar? Ele sai do histórico até você finalizar de novo.`)) return;
+  const hist = loadHist();
+  const idx = hist.findIndex(h => h.date === date && h.dia === dia && h.semana === semana);
+  if (idx === -1) return;
+  const entry = hist[idx];
+  hist.splice(idx, 1);
+  saveLocalHist(hist);
+  sbSet('hist', hist);
+
+  semanaNum = entry.semana;
+  currentDay = entry.dia;
+  const key = sessionKey(semanaNum, currentDay);
+  const exs = getExs(currentDay);
+  const exData = {};
+  exs.forEach((ex, i) => {
+    exData[i] = { series: (entry.exData[ex.nome] || []).map(s => ({ ...s })) };
+  });
+  sessions[key] = { exData, startTime: entry.startTime, endTime: null };
+  saveLocalSessions();
+  sbSet('sessions', sessions);
+
+  renderAll();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ─── PULL-TO-REFRESH PREVENTION ───────────────────────────────────────────────
